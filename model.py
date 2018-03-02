@@ -11,7 +11,7 @@ loss_weight = np.array([1,1])
 
 h = 512   #4032
 w = 512   #3024
-batch_size = 4
+batch_size = 1
 
 def conv2d(x,weight,n_filters,training,name,activation=tf.nn.relu):
     with tf.variable_scope('layer{}'.format(name)):
