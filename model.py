@@ -44,22 +44,6 @@ def deconv2d(x,kernel,strides,training,name,output_shape,activation=None):
 
     return deconv
 
-
-def upsampling_2d(tensor,name,size=(2,2)):
-    h_,w_,c_ = tensor.get_shape().as_list()[1:]
-    h_multi,w_multi = size
-    h = h_multi * h_
-    w = w_multi * w_
-    target = tf.image.resize_nearest_neighbor(tensor,size=(h,w),name='deconv_{}'.format(name))
-
-    return target
-
-def upsampling_concat(input_A,input_B,name):
-    upsampling = upsampling_2d(input_A,name=name,size=(2,2))
-    up_concat = tf.concat([upsampling,input_B],axis=-1,name='up_concat_{}'.format(name))
-
-    return up_concat
-
 def unet(input,training):
     #归一化[-1,1]
     input = input/127.5 - 1
