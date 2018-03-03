@@ -11,7 +11,8 @@ My Chinese blog about the implementation of this paper http://blog.csdn.net/gbyy
 ## Training on your own dataset
 1.Just put ur data under the folder named 'dataset'.<br> 
 2.run csv_generater.py to get the csv files for ur training.<br> 
-3.run train.py for training ur own model. 4.run test.py for testing new photo.<br>
+3.run train.py for training ur own model.<br> 
+4.run test.py for testing new photo.<br>
 <br>
 ## Tensorboard info
 ![](https://github.com/gbyy422990/salience_object_detection/blob/master/tensorboard/%E6%9C%AA%E5%91%BD%E5%90%8D%2011.png)
