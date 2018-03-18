@@ -16,7 +16,6 @@ I trained this model on gpu Tesla P100(1200 images, 10h)<br>
 4.run test.py for testing new photo.<br>
 <br>
 ## Tensorboard info
-<br>
 ![](https://github.com/gbyy422990/salience_object_detection/blob/master/tensorboard/%E6%9C%AA%E5%91%BD%E5%90%8D.png)
 <br>
 ![](https://github.com/gbyy422990/salience_object_detection/blob/master/tensorboard/%E6%9C%AA%E5%91%BD%E5%90%8D%203.png)
