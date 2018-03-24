@@ -162,7 +162,7 @@ def main(flags):
     y = tf.placeholder(tf.float32,shape = [flags.batch_size,h,w,c_label], name = 'y')
     mode = tf.placeholder(tf.bool, name='mode')
 
-    score_dsn6_up, score_dsn5_up, score_dsn4_up, score_dsn3_up, score_dsn2_up, score_dsn1_up, upscore_fuse = model.unet(X,mode)
+    score_dsn6_up, score_dsn5_up, score_dsn4_up, score_dsn3_up, score_dsn2_up, score_dsn1_up, upscore_fuse = model.dss_model(X,mode)
 
     print(score_dsn6_up.get_shape().as_list())
 
