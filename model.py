@@ -159,9 +159,9 @@ def loss_CE(y_pred,y_true):
     weighted_loss = tf.multiply(loss_map,weight_map)
 
     cross_entropy_mean = tf.reduce_mean(weighted_loss)'''
-    cross_entropy = -tf.reduce_mean(tf.reduce_sum(y_true*tf.log(y_pred)))
+    #cross_entropy = -tf.reduce_mean(tf.reduce_sum(y_true*tf.log(y_pred)))
 
-    #cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(labels=y_true,logits=y_pred)
+    cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(labels=y_true,logits=y_pred)
     cross_entropy_mean = tf.reduce_mean(cross_entropy)
 
     #将x的数据格式转化成dtype
