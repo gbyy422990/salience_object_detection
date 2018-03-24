@@ -1,6 +1,8 @@
 # Salience Object Detection
 Salience Object Detection Using python + tensorflow This is tensorflow implementation for cvpr2017 paper "Deeply Supervised Salient Object Detection with Short Connections".<br>
 
+If it is useful for u, pls give me a star! THX <br>
+
 Cuz i trained this model on my company's data,so to be honest i dont know this model still reach the performance mentioned in paper or not.
 
 ## Project info
@@ -20,3 +22,5 @@ I trained this model on gpu Tesla P100(1200 images, 10h)<br>
 <br>
 ![](https://github.com/gbyy422990/salience_object_detection/blob/master/tensorboard/%E6%9C%AA%E5%91%BD%E5%90%8D%203.png)
 
+# 2018.02.24 Update
+I added model scripy fot u guys for training on ur own dataset.
