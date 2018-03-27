@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 
 
-image_path = '/Volumes/王兴涛/圆盘/image'
+image_path = '/Volumes/image'
 
 file_names = os.listdir(image_path)
 
