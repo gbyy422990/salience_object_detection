@@ -22,5 +22,8 @@ I trained this model on gpu Tesla P100(1200 images, 10h)<br>
 <br>
 ![](https://github.com/gbyy422990/salience_object_detection/blob/master/tensorboard/%E6%9C%AA%E5%91%BD%E5%90%8D%203.png)
 
-# 2018.02.24 Update
+# Update
+## 2018.02.04
 I added model scripy fot u guys for training on ur own dataset.
+## 2018.03.28
+I fixed some bug, like loss problem etc, now u can use it.
