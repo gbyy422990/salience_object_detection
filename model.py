@@ -192,7 +192,7 @@ def loss_CE(y_pred,y_true):
 def train_op(loss,learning_rate):
 
     global_step = tf.train.get_or_create_global_step()
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+    optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 
     return optimizer.minimize(loss,global_step=global_step)
 
