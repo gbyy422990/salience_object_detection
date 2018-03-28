@@ -55,15 +55,12 @@ def main(flags):
     for name in names:
         inputname=os.path.join(flags.input_dir,name)
         image = read_image(inputname)
-        image=cv2.resize(image,(1024,1024))
+        image=cv2.resize(image,(1600,1200))
         # sess=tf.InteractiveSession()
 
         label_pred = sess.run(pred, feed_dict={X: np.expand_dims(image, 0), mode: False})
         merged = np.squeeze(label_pred)
         _, merged = cv2.threshold(merged, 127, 255, cv2.THRESH_BINARY)
-        a = np.max(merged)
-        print(a)
-        print(merged)
         save_name = os.path.join(flags.save_dir, name)
         cv2.imwrite(save_name, merged)
         print('Pred saved')
