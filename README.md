@@ -10,7 +10,7 @@ This code can be used to train, but the data is owned by my company.I'll try my 
 <br>
 My Chinese blog about the implementation of this paper http://blog.csdn.net/gbyy42299/article/details/79427457  <br>
 
-## Training on your own dataset
+## Usage
 I trained this model on gpu Tesla P100(1200 images, 10h)<br> 
 1.Just put ur data under the folder named 'dataset'.<br> 
 2.run csv_generater.py to get the csv files for ur training.<br> 
