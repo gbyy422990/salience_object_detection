@@ -59,7 +59,7 @@ def upsampling_concat(input_A,input_B,name):
     up_concat = tf.concat([upsampling,input_B],axis=-1,name='up_concat_{}'.format(name))
     return up_concat
 
-def unet(input,training):
+def dss_model(input,training):
     #归一化[-1,1]
     input = input - g_mean
     #input = tf.layers.conv2d(input,3,(1,1),name = 'color')   #filters:一个整数，输出空间的维度，也就是卷积核的数量
