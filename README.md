@@ -12,6 +12,7 @@ My Chinese blog about the implementation of this paper http://blog.csdn.net/gbyy
 
 ## Usage
 I trained this model on gpu Tesla P100(1200 images, 10h)<br> 
+u need download vgg16.npy as pre-trained model.<br>
 1.Just put ur data under the folder named 'dataset'.<br> 
 2.run csv_generater.py to get the csv files for ur training.<br> 
 3.run train.py for training ur own model.<br> 
