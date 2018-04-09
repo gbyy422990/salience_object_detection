@@ -4,8 +4,9 @@
 import os
 import tensorflow as tf
 import numpy as np
+import vgg16
 
-learning_rate=0.001
+learning_rate=1e-5
 num_class=2
 loss_weight = np.array([1,1])
 
@@ -17,8 +18,10 @@ g_mean = [142.53,129.53,120.20]
 def conv2d(x,weight,n_filters,training,name,activation=tf.nn.relu):
     with tf.variable_scope('layer{}'.format(name)):
         for index,filter in enumerate(n_filters):
-            conv = tf.layers.conv2d(x,filter,weight,strides=1,padding='same',activation=activation,name='conv_{}'.format(index+1))
-            conv = tf.layers.batch_normalization(conv,training=training,name='bn_{}'.format(index+1))
+            conv = tf.layers.conv2d(x,filter,weight,strides=1,padding='same',activation=None,name='conv_{}'.format(index+1))
+
+            if training != False:
+                conv = tf.layers.batch_normalization(conv,training=training,name='bn_{}'.format(index+1))
 
         if activation == None:
             return conv
@@ -37,7 +40,9 @@ def deconv2d(x,kernel,strides,training,name,output_shape,activation=None):
     kernel=tf.get_variable('weight_{}'.format(name),shape=kernel_shape,initializer=tf.random_normal_initializer(mean=0,stddev=1))
     deconv = tf.nn.conv2d_transpose(x, kernel, strides=strides,output_shape=output_shape, padding='SAME',
                                         name= 'upsample_{}'.format(name))
-    deconv = tf.layers.batch_normalization(deconv, training=training, name='bn{}'.format(name))
+
+    if training != False:
+        deconv = tf.layers.batch_normalization(deconv, training=training, name='bn{}'.format(name))
     if activation == None:
         return deconv
 
@@ -59,12 +64,15 @@ def upsampling_concat(input_A,input_B,name):
     up_concat = tf.concat([upsampling,input_B],axis=-1,name='up_concat_{}'.format(name))
     return up_concat
 
-def dss_model(input,training):
+def unet(input,training):
     #归一化[-1,1]
-    input = input - g_mean
+    input = input/127.5 - 1
     #input = tf.layers.conv2d(input,3,(1,1),name = 'color')   #filters:一个整数，输出空间的维度，也就是卷积核的数量
 
-    conv1_1 = conv2d(input, (3, 3), [32], training, name='conv1_1')
+    vgg = vgg16.Vgg16()
+    vgg.build(input)
+
+    '''conv1_1 = conv2d(input, (3, 3), [32], training, name='conv1_1')
     conv1_2 = conv2d(conv1_1, (3, 3), [32], training, name='conv1_2')
     pool1 = pool2d(conv1_2,pool_size=(2,2),pool_stride=2,name='pool1')
 
@@ -85,39 +93,41 @@ def dss_model(input,training):
     conv5_1 = conv2d(pool4, (3, 3), [256], training, name='conv5_1')
     conv5_2 = conv2d(conv5_1, (3, 3), [256], training, name='conv5_2')
     conv5_3 = conv2d(conv5_2, (3, 3), [256], training, name='conv5_3')
-    pool5 = pool2d(conv5_3, pool_size=(3, 3), pool_stride=2, name='pool5')
+    pool5 = pool2d(conv5_3, pool_size=(3, 3), pool_stride=2, name='pool5')'''
 
-    pool6 = pool2d(pool5, pool_size=(3, 3), pool_stride=1, name='pool5a')
+    #pool6 = tf.layers.average_pooling2d(vgg.pool5,pool_size=(3,3),strides=1,padding='SAME',name='pool5a')
+
+    pool6 = pool2d(vgg.pool5, pool_size=(3, 3), pool_stride=1, name='pool5a')
 
     conv1_dsn6 = conv2d(pool6, (7, 7), [256], training, name='conv1-dsn6')
     conv2_dsn6 = conv2d(conv1_dsn6, (7, 7), [256], training, name='conv2-dsn6')
-    conv3_dsn6 = conv2d(conv2_dsn6, (1, 1), [1], training, name='conv3-dsn6',activation=None)
-    score_dsn6_up = deconv2d(conv3_dsn6,64,32,training,name='upsample32_in_dsn6_sigmoid-dsn6',output_shape=[batch_size,h,w,1],activation=None)
+    conv3_dsn6 = conv2d(conv2_dsn6, (1, 1), [1], training=training, name='conv3-dsn6',activation=None)
+    score_dsn6_up = deconv2d(conv3_dsn6,64,32,training=False,name='upsample32_in_dsn6_sigmoid-dsn6',output_shape=[batch_size,h,w,1],activation=None)
 
-    conv1_dsn5 = conv2d(conv5_3, (5, 5), [256], training, name='conv1_dsn5')
+    conv1_dsn5 = conv2d(vgg.conv5_3, (5, 5), [256], training, name='conv1_dsn5')
     conv2_dsn5 = conv2d(conv1_dsn5, (5, 5), [256], training, name='conv2-dsn5')
-    conv3_dsn5 = conv2d(conv2_dsn5, (1, 1), [1], training, name='conv3-dsn5',activation=None)
-    score_dsn5_up = deconv2d(conv3_dsn5, 32, 16, training, name='upsample16_in_dsn5_sigmoid-dsn5',output_shape=[batch_size,h,w,1],activation=None)
+    conv3_dsn5 = conv2d(conv2_dsn5, (1, 1), [1], training=training, name='conv3-dsn5',activation=None)
+    score_dsn5_up = deconv2d(conv3_dsn5, 32, 16, training=False, name='upsample16_in_dsn5_sigmoid-dsn5',output_shape=[batch_size,h,w,1],activation=None)
 
-    conv1_dsn4 = conv2d(conv4_3, (5, 5), [128], training, name='conv1-dsn4')
+    conv1_dsn4 = conv2d(vgg.conv4_3, (5, 5), [128], training, name='conv1-dsn4')
     conv2_dsn4 = conv2d(conv1_dsn4, (5, 5), [128], training, name='conv2-dsn4')
     conv3_dsn4 = conv2d(conv2_dsn4, (1, 1), [1], training, name='conv3-dsn4',activation=None)
     score_dsn6_up_4=deconv2d(conv3_dsn6,8,4,training,name='upsample4_dsn6',output_shape=conv3_dsn4.get_shape().as_list())
     score_dsn5_up_4=deconv2d(conv3_dsn5,4,2,training,name='upsample2_dsn5',output_shape=conv3_dsn4.get_shape().as_list())
     concat_dsn4=tf.concat([score_dsn6_up_4,score_dsn5_up_4,conv3_dsn4],axis=-1,name='concat_dsn4')
-    conv4_dsn4 = conv2d(concat_dsn4, (1, 1), [1], training, name='conv4-dsn4',activation=None)
-    score_dsn4_up = deconv2d(conv4_dsn4, 16, 8, training, name='upsample8_in_dsn4_sigmoid-dsn4',output_shape=[batch_size,h,w,1],activation=None)
+    conv4_dsn4 = conv2d(concat_dsn4, (1, 1), [1], training=training, name='conv4-dsn4',activation=None)
+    score_dsn4_up = deconv2d(conv4_dsn4, 16, 8, training=False, name='upsample8_in_dsn4_sigmoid-dsn4',output_shape=[batch_size,h,w,1],activation=None)
 
-    conv1_dsn3 = conv2d(conv3_3, (5, 5), [128], training, name='conv1-dsn3')
+    conv1_dsn3 = conv2d(vgg.conv3_3, (5, 5), [128], training, name='conv1-dsn3')
     conv2_dsn3 = conv2d(conv1_dsn3, (5, 5), [128], training, name='conv2-dsn3')
     conv3_dsn3 = conv2d(conv2_dsn3, (1, 1), [1], training, name='conv3-dsn3')
     score_dsn6_up_3 = deconv2d(conv3_dsn6, 16, 8, training, name='upsample8_dsn6',output_shape=conv3_dsn3.get_shape().as_list())
     score_dsn5_up_3 = deconv2d(conv3_dsn5, 8, 4, training, name='upsample4_dsn5',output_shape=conv3_dsn3.get_shape().as_list())
     concat_dsn3 = tf.concat([score_dsn6_up_3, score_dsn5_up_3, conv3_dsn3], axis=-1, name='concat_dsn3')
-    conv4_dsn3 = conv2d(concat_dsn3, (1, 1), [1], training, name='conv4-dsn3',activation=None)
-    score_dsn3_up = deconv2d(conv4_dsn3, 8, 4, training, name='upsample4_in_dsn3_sigmoid-dsn3',output_shape=[batch_size,h,w,1],activation=None)
+    conv4_dsn3 = conv2d(concat_dsn3, (1, 1), [1], training=training, name='conv4-dsn3',activation=None)
+    score_dsn3_up = deconv2d(conv4_dsn3, 8, 4, training=False, name='upsample4_in_dsn3_sigmoid-dsn3',output_shape=[batch_size,h,w,1],activation=None)
 
-    conv1_dsn2 = conv2d(conv2_2, (3, 3), [64], training, name='conv1-dsn2')
+    conv1_dsn2 = conv2d(vgg.conv2_2, (3, 3), [64], training, name='conv1-dsn2')
     conv2_dsn2 = conv2d(conv1_dsn2, (3, 3), [64], training, name='conv2-dsn2')
     conv3_dsn2 = conv2d(conv2_dsn2, (1, 1), [1], training, name='conv3-dsn2')
     score_dsn6_up_2 = deconv2d(conv3_dsn6, 32, 16, training, name='upsample16_dsn6',output_shape=conv3_dsn2.get_shape().as_list())
@@ -126,9 +136,9 @@ def dss_model(input,training):
     score_dsn3_up_2 = deconv2d(conv3_dsn3, 4, 2, training, name='upsample2_dsn3',output_shape=conv3_dsn2.get_shape().as_list())
     concat_dsn2 = tf.concat([score_dsn6_up_2, score_dsn5_up_2,score_dsn4_up_2,score_dsn3_up_2, conv3_dsn2], axis=-1, name='concat_dsn2')
     conv4_dsn2 = conv2d(concat_dsn2, (1, 1), [1], training, name='conv4-dsn2',activation=None)
-    score_dsn2_up = deconv2d(conv4_dsn2, 4, 2, training, name='upsample2_in_dsn2_sigmoid-dsn2',output_shape=[batch_size,h,w,1],activation=None)
+    score_dsn2_up = deconv2d(conv4_dsn2, 4, 2, training=False, name='upsample2_in_dsn2_sigmoid-dsn2',output_shape=[batch_size,h,w,1],activation=None)
 
-    conv1_dsn1 = conv2d(conv1_2, (3, 3), [64], training, name='conv1-dsn1')
+    conv1_dsn1 = conv2d(vgg.conv1_2, (3, 3), [64], training, name='conv1-dsn1')
     conv2_dsn1 = conv2d(conv1_dsn1, (3, 3), [64], training, name='conv2-dsn1')
     conv3_dsn1 = conv2d(conv2_dsn1, (1, 1), [1], training, name='conv3-dsn1',activation=None)
     score_dsn6_up_1 = deconv2d(conv3_dsn6, 64, 32, training, name='upsample32_dsn6',output_shape=conv3_dsn1.get_shape().as_list())
@@ -137,15 +147,26 @@ def dss_model(input,training):
     score_dsn3_up_1 = deconv2d(conv3_dsn3, 8, 4, training, name='upsample4_dsn3',output_shape=conv3_dsn1.get_shape().as_list())
     concat_dsn1 = tf.concat([score_dsn6_up_1, score_dsn5_up_1, score_dsn4_up_1, score_dsn3_up_1, conv3_dsn1], axis=-1,
                             name='concat_dsn1')
-    score_dsn1_up = conv2d(concat_dsn1, (1, 1), [1], training, name='conv4-dsn1',activation=None)
+    score_dsn1_up = conv2d(concat_dsn1, (1, 1), [1], training=False, name='conv4-dsn1',activation=None)
 
     concat_upscore = tf.concat([score_dsn6_up,score_dsn5_up,score_dsn4_up,score_dsn3_up,score_dsn2_up,score_dsn1_up],
                                axis=-1,name='concat')
-    #upscore_fuse = conv2d(concat_upscore,(1,1),[1],training,name='new-score-weighting',activation=tf.nn.sigmoid)
-    upscore_fuse = tf.layers.conv2d(concat_upscore,filters=1,kernel_size=(1,1),strides=(1,1),padding='SAME',name='output',activation=None)
+    upscore_fuse = conv2d(concat_upscore,(1,1),[1],training=False,name='new-score-weighting',activation=None)
+    #upscore_fuse = tf.layers.conv2d(concat_upscore,filters=1,kernel_size=(1,1),strides=(1,1),padding='SAME',name='output',activation=tf.nn.sigmoid)
 
     return score_dsn6_up,score_dsn5_up,score_dsn4_up,score_dsn3_up,score_dsn2_up,score_dsn1_up,upscore_fuse
 
+
+#IOU损失
+def loss_IOU(y_pred,y_true):
+    H, W, _ = y_pred.get_shape().as_list()[1:]
+    flat_logits = tf.reshape(y_pred, [-1, H * W])
+    flat_labels = tf.reshape(y_true, [-1, H * W])
+    intersection = 2 * tf.reduce_sum(flat_logits * flat_labels, axis=1) + 1e-7
+    denominator = tf.reduce_sum(flat_logits, axis=1) + tf.reduce_sum(flat_labels, axis=1) + 1e-7
+    iou = 1 - tf.reduce_mean(intersection / denominator)
+
+    return iou
 
 def loss_CE(y_pred,y_true):
     '''flat_logits = tf.reshape(y_pred,[-1,num_class])
@@ -163,28 +184,6 @@ def loss_CE(y_pred,y_true):
 
     cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(labels=y_true,logits=y_pred)
     cross_entropy_mean = tf.reduce_mean(cross_entropy)
-
-
-    #将x的数据格式转化成dtype
-    '''labels = tf.cast(y_true,tf.int32)
-
-    flat_logits = tf.reshape(y_pred,(-1,num_class))
-
-    epsilon = tf.constant(value=1e-10)
-
-    flat_logits=tf.add(flat_logits,epsilon)
-    tf.shape(flat_logits, name='flat_logits')
-
-    flat_labels = tf.reshape(labels,(-1,1))
-    tf.shape(flat_labels,name='flat_shape1')
-
-    labels = tf.reshape(tf.one_hot(flat_labels,depth=num_class),[-1,num_class])
-    tf.shape(flat_labels, name='flat_shape2')
-
-    softmax = tf.nn.softmax(flat_logits)
-    tf.shape(softmax, name='softmax')
-    cross_entropy = -tf.reduce_sum(tf.multiply(labels*tf.log(softmax+epsilon),loss_weight),axis=[1])
-    cross_entropy_mean = tf.reduce_mean(cross_entropy,name='cross_entropy')'''
 
     return cross_entropy_mean
 

@@ -10,7 +10,7 @@ import model
 import time
 
 from model import train_op
-from model import loss_CE
+from model import loss_CE,loss_IOU
 
 
 
@@ -28,18 +28,18 @@ parser.add_argument('--test_dir',
                     default = './pigtest1.csv')
 
 parser.add_argument('--model_dir',
-                    default = './model')
+                    default = './model1')
 
 parser.add_argument('--epochs',
                     type = int,
-                    default = 40)
+                    default = 10)
 
 parser.add_argument('--peochs_per_eval',
                     type = int,
                     default = 1)
 
 parser.add_argument('--logdir',
-                    default = './logs')
+                    default = './logs1')
 
 parser.add_argument('--batch_size',
                     type = int,
@@ -58,7 +58,7 @@ parser.add_argument('--decay_rate',
                     type = float,
                     default = 0.9)
 
-#衰减速度
+#衰减速度model
 parser.add_argument('--decay_step',
                     type = int,
                     default = 100)
@@ -108,7 +108,7 @@ def data_augmentation(image,label,training=True):
         image = maybe_flipped[:, :, :-1]
         mask = maybe_flipped[:, :, -1:]
 
-        image = tf.image.random_brightness(image, 0.7)
+        #image = tf.image.random_brightness(image, 0.7)
         #image = tf.image.random_hue(image, 0.3)
         #设置随机的对比度
         #tf.image.random_contrast(image,lower=0.3,upper=1.0)
@@ -160,7 +160,7 @@ def main(flags):
     y = tf.placeholder(tf.float32,shape = [flags.batch_size,h,w,c_label], name = 'y')
     mode = tf.placeholder(tf.bool, name='mode')
 
-    score_dsn6_up, score_dsn5_up, score_dsn4_up, score_dsn3_up, score_dsn2_up, score_dsn1_up, upscore_fuse = model.dss_model(X,mode)
+    score_dsn6_up, score_dsn5_up, score_dsn4_up, score_dsn3_up, score_dsn2_up, score_dsn1_up, upscore_fuse = model.unet(X,mode)
 
     #print(score_dsn6_up.get_shape().as_list())
 
@@ -220,6 +220,7 @@ def main(flags):
     score_dsn2_up = tf.nn.sigmoid(score_dsn2_up)
     score_dsn1_up = tf.nn.sigmoid(score_dsn1_up)
     upscore_fuse = tf.nn.sigmoid(upscore_fuse)
+    print(upscore_fuse.get_shape().as_list())
 
     tf.add_to_collection('inputs', X)
     tf.add_to_collection('inputs', mode)
