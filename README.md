@@ -29,3 +29,5 @@ u need download vgg16.npy as pre-trained model.<br>
 I added model scripy fot u guys for training on ur own dataset.
 ## 2018.03.28
 I fixed some bug, like loss problem etc, now u can use it.
+## 2018.04.13
+U can find another salience obeject detection in this url: https://github.com/gbyy422990/salience_object-detection-non-local
