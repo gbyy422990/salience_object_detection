@@ -80,7 +80,7 @@ def unet(input, training):
     vgg = vgg16.Vgg16()
     vgg.build(input)
 
-    default_shape = tf.data.Dataset.from_tensor_slices([batch_size, h, w, 1])
+    default_shape = tf.constant([batch_size, h, w, 1])
 
     '''conv1_1 = conv2d(input, (3, 3), [32], training, name='conv1_1')
     conv1_2 = conv2d(conv1_1, (3, 3), [32], training, name='conv1_2')
