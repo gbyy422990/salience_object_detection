@@ -60,9 +60,6 @@ def main(flags):
     names = os.listdir(flags.input_dir)
     # names.remove('.DS_Store')
 
-    names = names[:16]
-    images = [read_and_resize(n) for n in names]
-
     for name in names:
         inputname = os.path.join(flags.input_dir, name)
         image = read_image(inputname)
@@ -89,10 +86,14 @@ def mainWithBatchSize(flags):
     images = [read_and_resize(n) for n in names]
 
     label_preds = sess.run(pred, feed_dict={X: np.array(images), mode: False})
+    images = np.array(label_preds * 255)
 
-    merged = label_preds * 255
-    print(merged)
-    print(np.array(merged))
+    for i in range(images.shape[0]):
+        image = images[i]
+        _, merged = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
+        save_name = os.path.join(flags.save_dir, names[i])
+        cv2.imwrite(save_name, merged)
+        print('Pred saved')
 
 
 if __name__ == '__main__':
