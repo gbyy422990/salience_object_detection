@@ -12,10 +12,8 @@ import time
 from model import train_op
 from model import loss_CE,loss_IOU
 
-
-
-h = 1200   #4032
-w = 1600   #3024
+h = 300   #4032
+w = 400   #3024
 c_image = 3
 c_label = 1
 g_mean = [142.53,129.53,120.20]
@@ -81,19 +79,18 @@ flags = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 def set_config():
-
     ''''#允许增长
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     session = tf.Session(config=config)
     '''
 
-    #控制使用率
+    # 控制使用率
     os.environ['CUDA_VISIBLE_DEVICES'] = str(flags.gpu)
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction = 1)
-    config = tf.ConfigProto(gpu_options = gpu_options)
-    session = tf.Session(config=config)
-
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1)
+    config = tf.ConfigProto(gpu_options=gpu_options)
+    # config.gpu_options.allow_growth = True
+    return tf.Session(config=config)
 
 def data_augmentation(image,label,training=True):
     if training:
@@ -134,7 +131,8 @@ def read_csv(queue,augmentation=True):
     label.set_shape([h,w,c_label])
 
     label = tf.cast(label,tf.float32)
-    label = label / (tf.reduce_max(label) + 1e-7)
+    # label = label / (tf.reduce_max(label) + 1e-7)
+    label = label / 255
 
     #数据增强
     if augmentation:
@@ -195,8 +193,8 @@ def main(flags):
         training_op = train_op(Loss,learning_rate)
 
 
-    train_csv = tf.train.string_input_producer(['pig1.csv'])
-    test_csv = tf.train.string_input_producer(['pigtest1.csv'])
+    train_csv = tf.train.string_input_producer(['misc.csv'])
+    test_csv = tf.train.string_input_producer(['misctest.csv'])
 
     train_image, train_label = read_csv(train_csv,augmentation=True)
     test_image, test_label = read_csv(test_csv,augmentation=False)
@@ -295,7 +293,7 @@ def main(flags):
             #我们必须使用tf.train.start_queue_runners(sess=sess)，去启动该线程。要在session当中将该线程开启,不然就会挂起。然后使用coord= tf.train.Coordinator()去做一些线程的同步工作,
             #否则会出现运行到sess.run一直卡住不动的情况。
             coord = tf.train.Coordinator()
-            threads = tf.train.start_queue_runners(coord=coord)
+            threads = tf.train.start_queue_runners(sess=sess, coord=coord)
 
             for epoch in range(flags.epochs):
                 for step in range(0,num_train,flags.batch_size):
@@ -319,7 +317,6 @@ def main(flags):
             coord.request_stop()
             coord.join(threads)
             saver.save(sess, "{}/model.ckpt".format(flags.model_dir))
-
 
 if __name__ == '__main__':
     #set_config()

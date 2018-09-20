@@ -10,8 +10,8 @@ learning_rate=1e-5
 num_class=2
 loss_weight = np.array([1,1])
 
-h = 1200   #4032
-w = 1600   #3024
+h = 300   #4032
+w = 400   #3024
 batch_size = 1
 g_mean = [142.53,129.53,120.20]
 
