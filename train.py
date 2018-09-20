@@ -89,7 +89,6 @@ def set_config():
     os.environ['CUDA_VISIBLE_DEVICES'] = str(flags.gpu)
     gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=1)
     config = tf.ConfigProto(gpu_options=gpu_options)
-    # config.gpu_options.allow_growth = True
     return tf.Session(config=config)
 
 def data_augmentation(image,label,training=True):
@@ -101,7 +100,6 @@ def data_augmentation(image,label,training=True):
         maybe_flipped = tf.image.random_flip_up_down(maybe_flipped)
         #maybe_flipped = tf.random_crop(maybe_flipped,size=[h/2,w/2,image_label.get_shape()[-1]])
 
-
         image = maybe_flipped[:, :, :-1]
         mask = maybe_flipped[:, :, -1:]
 
@@ -109,7 +107,6 @@ def data_augmentation(image,label,training=True):
         #image = tf.image.random_hue(image, 0.3)
         #设置随机的对比度
         #tf.image.random_contrast(image,lower=0.3,upper=1.0)
-
         return image, mask
 
 def read_csv(queue,augmentation=True):
