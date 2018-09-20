@@ -46,6 +46,12 @@ def read_image(image_path, gray=False):
         return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 
+def read_and_resize(imageName):
+    inputname = os.path.join(flags.input_dir, imageName)
+    image = read_image(inputname)
+    return cv2.resize(image, (400, 300))
+
+
 def main(flags):
     sess = load_model()
     X, mode = tf.get_collection('inputs')
@@ -53,6 +59,10 @@ def main(flags):
 
     names = os.listdir(flags.input_dir)
     # names.remove('.DS_Store')
+
+    names = names[:16]
+    images = [read_and_resize(n) for n in names]
+
     for name in names:
         inputname = os.path.join(flags.input_dir, name)
         image = read_image(inputname)
@@ -67,5 +77,23 @@ def main(flags):
         print('Pred saved')
 
 
+def mainWithBatchSize(flags):
+    sess = load_model()
+    X, mode = tf.get_collection('inputs')
+    pred = tf.get_collection('upscore_fuse')[0]
+
+    names = os.listdir(flags.input_dir)
+    # names.remove('.DS_Store')
+
+    names = names[:16]
+    images = [read_and_resize(n) for n in names]
+
+    label_preds = sess.run(pred, feed_dict={X: np.array(images), mode: False})
+
+    merged = label_preds * 255
+    print(merged)
+    print(np.array(merged))
+
+
 if __name__ == '__main__':
-    main(flags)
+    mainWithBatchSize(flags)
