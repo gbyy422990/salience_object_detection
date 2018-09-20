@@ -12,7 +12,7 @@ loss_weight = np.array([1, 1])
 
 h = 300  # 4032
 w = 400  # 3024
-batch_size = 1
+batch_size = 16
 g_mean = [142.53, 129.53, 120.20]
 
 
