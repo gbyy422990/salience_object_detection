@@ -80,6 +80,8 @@ def unet(input, training):
     vgg = vgg16.Vgg16()
     vgg.build(input)
 
+    default_shape = tf.data.Dataset.from_tensor_slices([batch_size, h, w, 1])
+
     '''conv1_1 = conv2d(input, (3, 3), [32], training, name='conv1_1')
     conv1_2 = conv2d(conv1_1, (3, 3), [32], training, name='conv1_2')
     pool1 = pool2d(conv1_2,pool_size=(2,2),pool_stride=2,name='pool1')
@@ -111,13 +113,13 @@ def unet(input, training):
     conv2_dsn6 = conv2d(conv1_dsn6, (7, 7), [256], training, name='conv2-dsn6')
     conv3_dsn6 = conv2d(conv2_dsn6, (1, 1), [1], training=training, name='conv3-dsn6', activation=None)
     score_dsn6_up = deconv2d(conv3_dsn6, 64, 32, training=False, name='upsample32_in_dsn6_sigmoid-dsn6',
-                             output_shape=[batch_size, h, w, 1], activation=None)
+                             output_shape=default_shape, activation=None)
 
     conv1_dsn5 = conv2d(vgg.conv5_3, (5, 5), [256], training, name='conv1_dsn5')
     conv2_dsn5 = conv2d(conv1_dsn5, (5, 5), [256], training, name='conv2-dsn5')
     conv3_dsn5 = conv2d(conv2_dsn5, (1, 1), [1], training=training, name='conv3-dsn5', activation=None)
     score_dsn5_up = deconv2d(conv3_dsn5, 32, 16, training=False, name='upsample16_in_dsn5_sigmoid-dsn5',
-                             output_shape=[batch_size, h, w, 1], activation=None)
+                             output_shape=default_shape, activation=None)
 
     conv1_dsn4 = conv2d(vgg.conv4_3, (5, 5), [128], training, name='conv1-dsn4')
     conv2_dsn4 = conv2d(conv1_dsn4, (5, 5), [128], training, name='conv2-dsn4')
@@ -129,7 +131,7 @@ def unet(input, training):
     concat_dsn4 = tf.concat([score_dsn6_up_4, score_dsn5_up_4, conv3_dsn4], axis=-1, name='concat_dsn4')
     conv4_dsn4 = conv2d(concat_dsn4, (1, 1), [1], training=training, name='conv4-dsn4', activation=None)
     score_dsn4_up = deconv2d(conv4_dsn4, 16, 8, training=False, name='upsample8_in_dsn4_sigmoid-dsn4',
-                             output_shape=[batch_size, h, w, 1], activation=None)
+                             output_shape=default_shape, activation=None)
 
     conv1_dsn3 = conv2d(vgg.conv3_3, (5, 5), [128], training, name='conv1-dsn3')
     conv2_dsn3 = conv2d(conv1_dsn3, (5, 5), [128], training, name='conv2-dsn3')
@@ -141,7 +143,7 @@ def unet(input, training):
     concat_dsn3 = tf.concat([score_dsn6_up_3, score_dsn5_up_3, conv3_dsn3], axis=-1, name='concat_dsn3')
     conv4_dsn3 = conv2d(concat_dsn3, (1, 1), [1], training=training, name='conv4-dsn3', activation=None)
     score_dsn3_up = deconv2d(conv4_dsn3, 8, 4, training=False, name='upsample4_in_dsn3_sigmoid-dsn3',
-                             output_shape=[batch_size, h, w, 1], activation=None)
+                             output_shape=default_shape, activation=None)
 
     conv1_dsn2 = conv2d(vgg.conv2_2, (3, 3), [64], training, name='conv1-dsn2')
     conv2_dsn2 = conv2d(conv1_dsn2, (3, 3), [64], training, name='conv2-dsn2')
@@ -158,7 +160,7 @@ def unet(input, training):
                             name='concat_dsn2')
     conv4_dsn2 = conv2d(concat_dsn2, (1, 1), [1], training, name='conv4-dsn2', activation=None)
     score_dsn2_up = deconv2d(conv4_dsn2, 4, 2, training=False, name='upsample2_in_dsn2_sigmoid-dsn2',
-                             output_shape=[batch_size, h, w, 1], activation=None)
+                             output_shape=default_shape, activation=None)
 
     conv1_dsn1 = conv2d(vgg.conv1_2, (3, 3), [64], training, name='conv1-dsn1')
     conv2_dsn1 = conv2d(conv1_dsn1, (3, 3), [64], training, name='conv2-dsn1')
