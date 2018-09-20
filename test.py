@@ -24,6 +24,7 @@ parser.add_argument('--gpu',
 flags = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
+
 def load_model():
     file_meta = os.path.join(flags.model_dir, 'model.ckpt.meta')
     file_ckpt = os.path.join(flags.model_dir, 'model.ckpt')
@@ -50,12 +51,12 @@ def main(flags):
     X, mode = tf.get_collection('inputs')
     pred = tf.get_collection('upscore_fuse')[0]
 
-    names=os.listdir(flags.input_dir)
+    names = os.listdir(flags.input_dir)
     # names.remove('.DS_Store')
     for name in names:
-        inputname=os.path.join(flags.input_dir,name)
+        inputname = os.path.join(flags.input_dir, name)
         image = read_image(inputname)
-        image=cv2.resize(image,(400, 300))
+        image = cv2.resize(image, (400, 300))
         # sess=tf.InteractiveSession()
 
         label_pred = sess.run(pred, feed_dict={X: np.expand_dims(image, 0), mode: False})
@@ -68,9 +69,3 @@ def main(flags):
 
 if __name__ == '__main__':
     main(flags)
-
-
-
-
-
-
