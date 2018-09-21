@@ -48,7 +48,7 @@ def deconv2d(x, kernel, strides, training, name, output_shape, activation=None):
     deconv = tf.reshape(deconv, output_shape)
     # now the shape is back to (?, H, W, C) or (?, C, H, W)
 
-    if training:
+    if training != False:
         deconv = tf.layers.batch_normalization(deconv, training=training, name='bn{}'.format(name))
     if activation is None:
         return deconv
