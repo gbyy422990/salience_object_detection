@@ -82,7 +82,7 @@ def unet(input, training):
     vgg = vgg16.Vgg16()
     vgg.build(input)
 
-    default_shape = tf.constant([tf.shape(input)[0], tf.shape(input)[1], tf.shape(input)[2], 1])
+    default_shape = tf.stack([tf.shape(input)[0], tf.shape(input)[1], tf.shape(input)[2], 1])
 
     '''conv1_1 = conv2d(input, (3, 3), [32], training, name='conv1_1')
     conv1_2 = conv2d(conv1_1, (3, 3), [32], training, name='conv1_2')
