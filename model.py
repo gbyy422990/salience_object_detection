@@ -127,9 +127,9 @@ def unet(input, training):
     conv2_dsn4 = conv2d(conv1_dsn4, (5, 5), [128], training, name='conv2-dsn4')
     conv3_dsn4 = conv2d(conv2_dsn4, (1, 1), [1], training, name='conv3-dsn4', activation=None)
     score_dsn6_up_4 = deconv2d(conv3_dsn6, 8, 4, training, name='upsample4_dsn6',
-                               output_shape=conv3_dsn4.get_shape())
+                               output_shape=tf.shape(conv3_dsn4))
     score_dsn5_up_4 = deconv2d(conv3_dsn5, 4, 2, training, name='upsample2_dsn5',
-                               output_shape=conv3_dsn4.get_shape().as_list())
+                               output_shape=tf.shape(conv3_dsn4))
     concat_dsn4 = tf.concat([score_dsn6_up_4, score_dsn5_up_4, conv3_dsn4], axis=-1, name='concat_dsn4')
     conv4_dsn4 = conv2d(concat_dsn4, (1, 1), [1], training=training, name='conv4-dsn4', activation=None)
     score_dsn4_up = deconv2d(conv4_dsn4, 16, 8, training=False, name='upsample8_in_dsn4_sigmoid-dsn4',
@@ -139,9 +139,9 @@ def unet(input, training):
     conv2_dsn3 = conv2d(conv1_dsn3, (5, 5), [128], training, name='conv2-dsn3')
     conv3_dsn3 = conv2d(conv2_dsn3, (1, 1), [1], training, name='conv3-dsn3')
     score_dsn6_up_3 = deconv2d(conv3_dsn6, 16, 8, training, name='upsample8_dsn6',
-                               output_shape=conv3_dsn3.get_shape())
+                               output_shape=tf.shape(conv3_dsn3))
     score_dsn5_up_3 = deconv2d(conv3_dsn5, 8, 4, training, name='upsample4_dsn5',
-                               output_shape=conv3_dsn3.get_shape())
+                               output_shape=tf.shape(conv3_dsn3))
     concat_dsn3 = tf.concat([score_dsn6_up_3, score_dsn5_up_3, conv3_dsn3], axis=-1, name='concat_dsn3')
     conv4_dsn3 = conv2d(concat_dsn3, (1, 1), [1], training=training, name='conv4-dsn3', activation=None)
     score_dsn3_up = deconv2d(conv4_dsn3, 8, 4, training=False, name='upsample4_in_dsn3_sigmoid-dsn3',
@@ -151,13 +151,13 @@ def unet(input, training):
     conv2_dsn2 = conv2d(conv1_dsn2, (3, 3), [64], training, name='conv2-dsn2')
     conv3_dsn2 = conv2d(conv2_dsn2, (1, 1), [1], training, name='conv3-dsn2')
     score_dsn6_up_2 = deconv2d(conv3_dsn6, 32, 16, training, name='upsample16_dsn6',
-                               output_shape=conv3_dsn2.get_shape())
+                               output_shape=tf.shape(conv3_dsn2))
     score_dsn5_up_2 = deconv2d(conv3_dsn5, 16, 8, training, name='upsample8_dsn5',
-                               output_shape=conv3_dsn2.get_shape())
+                               output_shape=tf.shape(conv3_dsn2))
     score_dsn4_up_2 = deconv2d(conv3_dsn4, 8, 4, training, name='upsample4_dsn4',
-                               output_shape=conv3_dsn2.get_shape())
+                               output_shape=tf.shape(conv3_dsn2))
     score_dsn3_up_2 = deconv2d(conv3_dsn3, 4, 2, training, name='upsample2_dsn3',
-                               output_shape=conv3_dsn2.get_shape())
+                               output_shape=tf.shape(conv3_dsn2))
     concat_dsn2 = tf.concat([score_dsn6_up_2, score_dsn5_up_2, score_dsn4_up_2, score_dsn3_up_2, conv3_dsn2], axis=-1,
                             name='concat_dsn2')
     conv4_dsn2 = conv2d(concat_dsn2, (1, 1), [1], training, name='conv4-dsn2', activation=None)
@@ -168,13 +168,13 @@ def unet(input, training):
     conv2_dsn1 = conv2d(conv1_dsn1, (3, 3), [64], training, name='conv2-dsn1')
     conv3_dsn1 = conv2d(conv2_dsn1, (1, 1), [1], training, name='conv3-dsn1', activation=None)
     score_dsn6_up_1 = deconv2d(conv3_dsn6, 64, 32, training, name='upsample32_dsn6',
-                               output_shape=conv3_dsn1.get_shape())
+                               output_shape=tf.shape(conv3_dsn1))
     score_dsn5_up_1 = deconv2d(conv3_dsn5, 32, 16, training, name='upsample16_dsn5',
-                               output_shape=conv3_dsn1.get_shape())
+                               output_shape=tf.shape(conv3_dsn1))
     score_dsn4_up_1 = deconv2d(conv3_dsn4, 16, 8, training, name='upsample8_dsn4',
-                               output_shape=conv3_dsn1.get_shape())
+                               output_shape=tf.shape(conv3_dsn1))
     score_dsn3_up_1 = deconv2d(conv3_dsn3, 8, 4, training, name='upsample4_dsn3',
-                               output_shape=conv3_dsn1.get_shape())
+                               output_shape=tf.shape(conv3_dsn1))
     concat_dsn1 = tf.concat([score_dsn6_up_1, score_dsn5_up_1, score_dsn4_up_1, score_dsn3_up_1, conv3_dsn1], axis=-1,
                             name='concat_dsn1')
     score_dsn1_up = conv2d(concat_dsn1, (1, 1), [1], training=False, name='conv4-dsn1', activation=None)
