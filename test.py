@@ -21,6 +21,9 @@ parser.add_argument('--save_dir',
 parser.add_argument('--gpu',
                     type=int,
                     default=0)
+parser.add_argument('--with_batch',
+                    type=int,
+                    default=0)
 flags = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
@@ -74,7 +77,7 @@ def main(flags):
         print('Pred saved')
 
 
-def mainWithBatchSize(flags):
+def main_with_batch_size(flags):
     sess = load_model()
     X, mode = tf.get_collection('inputs')
     pred = tf.get_collection('upscore_fuse')[0]
@@ -97,4 +100,7 @@ def mainWithBatchSize(flags):
 
 
 if __name__ == '__main__':
-    mainWithBatchSize(flags)
+    if flags.with_batch == 0:
+        main(flags)
+    else:
+        main_with_batch_size(flags)
