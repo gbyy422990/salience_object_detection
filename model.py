@@ -10,9 +10,6 @@ learning_rate = 1e-5
 num_class = 2
 loss_weight = np.array([1, 1])
 
-h = 300  # 4032
-w = 400  # 3024
-batch_size = 16
 g_mean = [142.53, 129.53, 120.20]
 
 
@@ -46,9 +43,14 @@ def deconv2d(x, kernel, strides, training, name, output_shape, activation=None):
     deconv = tf.nn.conv2d_transpose(x, kernel, strides=strides, output_shape=output_shape, padding='SAME',
                                     name='upsample_{}'.format(name))
 
-    if training != False:
+    # Now output.get_shape() is equal (?,?,?,?) which can become a problem in the
+    # next layers. This can be repaired by reshaping the tensor to its shape:
+    deconv = tf.reshape(deconv, output_shape)
+    # now the shape is back to (?, H, W, C) or (?, C, H, W)
+
+    if training:
         deconv = tf.layers.batch_normalization(deconv, training=training, name='bn{}'.format(name))
-    if activation == None:
+    if activation is None:
         return deconv
 
     deconv = activation(deconv, name='sigmoid_{}'.format(name))
@@ -80,7 +82,7 @@ def unet(input, training):
     vgg = vgg16.Vgg16()
     vgg.build(input)
 
-    default_shape = tf.constant([batch_size, h, w, 1])
+    default_shape = tf.constant([tf.shape(input)[0], tf.shape(input)[1], tf.shape(input)[2], 1])
 
     '''conv1_1 = conv2d(input, (3, 3), [32], training, name='conv1_1')
     conv1_2 = conv2d(conv1_1, (3, 3), [32], training, name='conv1_2')
