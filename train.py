@@ -261,16 +261,7 @@ def main(flags):
         sess.run(init)
 
         saver = tf.train.Saver()
-        # if not os.listdir(flags.model_dir):
-        #     print('No model')
-        #     try:
-        #         os.rmdir(flags.model_dir)
-        #     except Exception as e:
-        #         print(e)
-        #     os.mkdir(flags.model_dir)
-        # else:
-        #     latest_check_point = tf.train.latest_checkpoint(flags.model_dir)
-        #     saver.restore(sess, latest_check_point)
+
         if os.path.exists(flags.model_dir) and tf.train.checkpoint_exists(flags.model_dir):
             latest_check_point = tf.train.latest_checkpoint(flags.model_dir)
             saver.restore(sess, latest_check_point)
@@ -298,15 +289,16 @@ def main(flags):
                     _, step_ce, step_summary, global_step_value = sess.run([training_op, Loss, summary_op, global_step],
                                                                            feed_dict={X: X_train, y: y_train,
                                                                                       mode: True})
-
                     train_writer.add_summary(step_summary, global_step_value)
                     print('epoch:{} step:{} loss_CE:{}'.format(epoch + 1, global_step_value, step_ce))
+
                 for step in range(0, num_test, flags.batch_size):
                     X_test, y_test = sess.run([X_test_batch_op, y_test_batch_op])
                     step_ce, step_summary = sess.run([Loss, summary_op], feed_dict={X: X_test, y: y_test, mode: False})
 
-                    test_writer.add_summary(step_summary, epoch * (
-                            num_train // flags.batch_size) + step // flags.batch_size * num_train // num_test)
+                    test_writer.add_summary(step_summary, epoch *
+                                            (num_train // flags.batch_size)
+                                            + step // flags.batch_size * num_train // num_test)
                     print('Test loss_CE:{}'.format(step_ce))
                 saver.save(sess, '{}/model.ckpt'.format(flags.model_dir))
 
