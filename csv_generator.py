@@ -9,6 +9,7 @@ def create_csv(dirname):
     #print(name)
     with open (dirname+'.csv','w') as csvfile:
         writer = csv.writer(csvfile)
+        writer.writerow(['data', 'label'])
         for n in name:
             if n[-4:] == '.jpg':
                 print(n)
@@ -18,5 +19,5 @@ def create_csv(dirname):
                 pass
 
 if __name__ == "__main__":
-    create_csv('pig')
-    create_csv('pigtest')
+    create_csv('misc')
+    create_csv('misctest')

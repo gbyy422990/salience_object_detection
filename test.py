@@ -14,14 +14,18 @@ parser.add_argument('--input_dir',
                     default='pigdata/test')
 parser.add_argument('--model_dir',
                     type=str,
-                    default='./model')
+                    default='./model1')
 parser.add_argument('--save_dir',
                     type=str,
                     default='./result1')
 parser.add_argument('--gpu',
                     type=int,
                     default=0)
+parser.add_argument('--with_batch',
+                    type=int,
+                    default=0)
 flags = parser.parse_args()
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 
 def load_model():
@@ -45,32 +49,58 @@ def read_image(image_path, gray=False):
         return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 
+def read_and_resize(imageName):
+    inputname = os.path.join(flags.input_dir, imageName)
+    image = read_image(inputname)
+    return cv2.resize(image, (400, 300))
+
+
 def main(flags):
     sess = load_model()
     X, mode = tf.get_collection('inputs')
     pred = tf.get_collection('upscore_fuse')[0]
 
-    names=os.listdir(flags.input_dir)
+    names = os.listdir(flags.input_dir)
     # names.remove('.DS_Store')
+
     for name in names:
-        inputname=os.path.join(flags.input_dir,name)
+        inputname = os.path.join(flags.input_dir, name)
         image = read_image(inputname)
-        image=cv2.resize(image,(1600,1200))
+        image = cv2.resize(image, (400, 300))
         # sess=tf.InteractiveSession()
 
         label_pred = sess.run(pred, feed_dict={X: np.expand_dims(image, 0), mode: False})
-        merged = np.squeeze(label_pred)
+        merged = np.squeeze(label_pred) * 255
         _, merged = cv2.threshold(merged, 127, 255, cv2.THRESH_BINARY)
         save_name = os.path.join(flags.save_dir, name)
         cv2.imwrite(save_name, merged)
         print('Pred saved')
 
 
+def main_with_batch_size(flags):
+    sess = load_model()
+    X, mode = tf.get_collection('inputs')
+    pred = tf.get_collection('upscore_fuse')[0]
+
+    names = os.listdir(flags.input_dir)
+    # names.remove('.DS_Store')
+
+    names = names[:16]
+    images = [read_and_resize(n) for n in names]
+
+    label_preds = sess.run(pred, feed_dict={X: np.array(images), mode: False})
+    images = np.array(label_preds * 255)
+
+    for i in range(images.shape[0]):
+        image = images[i]
+        _, merged = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY)
+        save_name = os.path.join(flags.save_dir, names[i])
+        cv2.imwrite(save_name, merged)
+        print('Pred saved')
+
+
 if __name__ == '__main__':
-    main(flags)
-
-
-
-
-
-
+    if flags.with_batch == 0:
+        main(flags)
+    else:
+        main_with_batch_size(flags)

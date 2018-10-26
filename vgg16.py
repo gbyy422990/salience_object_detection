@@ -19,7 +19,7 @@ class Vgg16:
             print(path)
             vgg16_npy_path = path
 
-        self.data_dict = np.load(vgg16_npy_path).item()
+        self.data_dict = np.load(vgg16_npy_path, encoding='latin1').item()
         print("npy file loaded")
 
     def build(self, input, train=False):
